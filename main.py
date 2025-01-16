@@ -24,16 +24,26 @@ class TikTokDownloader:
         tiktok_pattern = r'https?://((?:vm|vt|www|video-[a-z0-9]+)\.)?(?:tiktok|tiktokv)\.(?:com|us)/.*'
         return bool(re.match(tiktok_pattern, url))
 
-    @staticmethod
-    def progress_hook(d: Dict[str, Any]) -> None:
-        """Hook to display download progress"""
-        if d['status'] == 'downloading':
-            progress = d.get('_percent_str', 'N/A')
-            speed = d.get('_speed_str', 'N/A')
-            eta = d.get('_eta_str', 'N/A')
-            print(f"\rDownloading: {progress} at {speed} ETA: {eta}", end='')
-        elif d['status'] == 'finished':
-            print("\nDownload completed, finalizing...")
+    def progress_hook(self, progress_callback):
+        """Create a progress hook that calls back with progress info"""
+
+        def hook(d: Dict[str, Any]) -> None:
+            if d['status'] == 'downloading':
+                # Convert _percent_str like ' 25.5%' to float 25.5
+                percent = float(d.get('_percent_str', '0%').strip().replace('%', '') or 0)
+                speed = d.get('_speed_str', 'N/A')
+                eta = d.get('_eta_str', 'N/A')
+
+                print(f"\rDownloading: {percent}% at {speed} ETA: {eta}", end='')
+                if progress_callback:
+                    progress_callback(percent)
+
+            elif d['status'] == 'finished':
+                print("\nDownload completed, finalizing...")
+                if progress_callback:
+                    progress_callback(100)
+
+        return hook
 
     def get_filename(self, date_str: str) -> str:
         """Generate filename based on the date from metadata"""
@@ -44,8 +54,8 @@ class TikTokDownloader:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             return f"tiktok_{timestamp}.mp4"
 
-    def download_video(self, video_url: str, date_str: str) -> Optional[str]:
-        """Download a single TikTok video"""
+    def download_video(self, video_url: str, date_str: str, progress_callback=None) -> Optional[str]:
+        """Download a single TikTok video with progress updates"""
         if not self.validate_url(video_url):
             print(f"Error: Invalid TikTok URL - {video_url}")
             return None
@@ -58,7 +68,7 @@ class TikTokDownloader:
             'format': 'best',
             'noplaylist': True,
             'quiet': False,
-            'progress_hooks': [self.progress_hook],
+            'progress_hooks': [self.progress_hook(progress_callback)],
             'extractor_args': {'tiktok': {'webpage_download': True}},
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -94,19 +104,27 @@ def get_my_videos(data: Dict) -> List[Dict]:
     return data.get("Video", {}).get("Videos", {}).get("VideoList", [])
 
 
-def download_videos(downloader: TikTokDownloader, videos: List[Dict]) -> None:
-    """Download a list of videos"""
+def download_videos(downloader: TikTokDownloader, videos: List[Dict], progress_callback=None) -> None:
+    """Download a list of videos with progress updates"""
     videos = [v for v in videos if v.get("Link") and v.get("Date")]
+    total = len(videos)
 
-    print(f"Found {len(videos)} videos to download")
+    print(f"Found {total} videos to download")
 
     # Process downloads one at a time
     for i, video in enumerate(videos, 1):
-        print(f"\nDownloading video {i} of {len(videos)}")
-        downloader.download_video(video["Link"], video["Date"])
+        print(f"\nDownloading video {i} of {total}")
+        if progress_callback:
+            # Create a callback that updates both video and overall progress
+            def video_progress(percent):
+                progress_callback(i - 1, total, percent / 100, f"Downloading video {i} of {total}")
+
+            downloader.download_video(video["Link"], video["Date"], video_progress)
+        else:
+            downloader.download_video(video["Link"], video["Date"])
 
 
-def main(metadata_file: str, base_dir: str, video_type: str):
+def main(metadata_file: str, base_dir: str, video_type: str, progress_callback=None):
     # Determine target directory based on video type
     download_dir = os.path.join(base_dir, video_type)
 
@@ -126,8 +144,8 @@ def main(metadata_file: str, base_dir: str, video_type: str):
         print(f"Unknown video type: {video_type}")
         return
 
-    # Download the videos
-    download_videos(downloader, videos)
+    # Download the videos with progress updates
+    download_videos(downloader, videos, progress_callback)
 
 
 if __name__ == "__main__":
