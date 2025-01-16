@@ -13,7 +13,7 @@ This guide will help you download your TikTok videos or favorites to your comput
 ---
 
 ## Step 2: Download the Tool
-1. Go to the [GitHub Repository](#) for this TikTok Video Downloader.
+1. Go to the [GitHub Repository](https://github.com/kenadamson/tiktok-dl) for this TikTok Video Downloader.
 2. On the repository page, look for a green **Code** button.
 3. Click **Code** and then select **Download ZIP**.
 4. Save the ZIP file to your computer and unzip it to a folder of your choice.
