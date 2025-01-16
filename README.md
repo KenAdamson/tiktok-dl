@@ -43,6 +43,21 @@ This guide will help you download your TikTok videos or favorites to your comput
 ---
 
 ## Step 6: Run the Tool
+You can use this tool in two ways: through a simple graphical interface or via command line.
+### Option A: Using the Graphical Interface
+1. Navigate to the folder where you unzipped the tool
+2. Run
+```bash
+python main-ui.py
+```
+3. In the window that opens:
+- Click "Browse" to select your TikTok data JSON file
+- Click "Browse" to choose where to save the videos
+- Select either "Favorite Videos" or "My Videos"
+- Click "Start Download" to begin
+4. The progress bars will show both overall progress and current video progress
+  
+### Option B: Using the Command Line
 1. Open a terminal or command prompt.
 2. Navigate to the folder where you unzipped the tool.
 3. Run one of the following commands, depending on what you want to download:
