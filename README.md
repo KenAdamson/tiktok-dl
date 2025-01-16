@@ -15,8 +15,10 @@ Clone this repo.  Pull the dependencies using the requirments.txt. Run the app, 
 
 - python main.py .\user_data_tiktok.json M:\tiktok_data\ --type my-videos
 - - Downloads YOUR videos to a subfolder named "my-videos"
+  - The videow will be named according to the date/time they were created, so will be in chronological order.
 - python main.py .\user_data_tiktok.json M:\tiktok_data\ --type favorites
 - - Downloads your Favorite-d videos to a folder named "favorites"
+  - The videos will be named according to when you favorited them, so won't be in order by creation date/time, but in the order you saw and Favorited them.
 
 # DANGER
 Videos are large.  You may have thousands of favorited videos and - depending on how prolific a content-creator you are - as many personal videos.  BE SURE YOU HAVE A LOT OF DISK SPACE!
