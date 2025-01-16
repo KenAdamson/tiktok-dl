@@ -55,7 +55,7 @@ jobs:
         with:
           python_ver: "3.10"
           spec: |
-            ${{ matrix.os == 'windows-latest' && './tiktok-downloader.spec' || 'main.py' }}
+            ${{ matrix.os == 'windows-latest' && './tiktok-downloader.spec' || './main.py' }}
           requirements: "requirements.txt"
           upload_exe_with_name: "TikTok Downloader - ${{ matrix.os }}"
           options: --onefile, --name "TikTokDownloader", --windowed
