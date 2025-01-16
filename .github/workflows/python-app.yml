@@ -1,4 +1,4 @@
-name: Python application
+name: Build and Test Application
 
 on:
   push:
@@ -10,10 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.10
@@ -27,12 +25,34 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
     - name: Test with pytest
-      run: |
-        pytest
+      run: pytest
+
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install PyInstaller
+      run: pip install pyinstaller
+    - name: Build with PyInstaller
+      uses: casperdcl/pyinstaller-action@v2
+      with:
+        args: main.py
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-${{ matrix.os }}
+        path: dist/
