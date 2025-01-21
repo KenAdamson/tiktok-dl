@@ -5,6 +5,7 @@ import json
 import argparse
 from typing import Optional, Dict, Any, List
 from datetime import datetime
+from strip_ansi import strip_ansi
 
 
 class TikTokDownloader:
@@ -30,7 +31,7 @@ class TikTokDownloader:
         def hook(d: Dict[str, Any]) -> None:
             if d['status'] == 'downloading':
                 # Convert _percent_str like ' 25.5%' to float 25.5
-                percent = float(d.get('_percent_str', '0%').strip().replace('%', '') or 0)
+                percent = float(strip_ansi(d.get('_percent_str', '0%').strip().replace('%', '')) or 0)
                 speed = d.get('_speed_str', 'N/A')
                 eta = d.get('_eta_str', 'N/A')
 
